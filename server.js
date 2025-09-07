@@ -22,7 +22,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Weather API configuration
 const WEATHER_API_KEY = process.env.WEATHER_API_KEY;
-const WEATHER_API_URL = 'https://api.weatherapi.com/v1/current.json';
+const WEATHER_API_URL = `https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${location}`;
 
 // Debug API key status
 console.log('=== API Config Debug ===');
