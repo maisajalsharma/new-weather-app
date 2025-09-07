@@ -197,8 +197,11 @@ app.get('/', (req, res) => {
 });
 
 // 404 handler
-app.use((req, res) => {
-    res.status(404).json({ error: 'Not found', message: 'Resource not found' });
+app.get('/api/env', (req, res) => {
+    res.json({
+        apiKeyPresent: !!process.env.WEATHER_API_KEY,
+        apiKeyPreview: process.env.WEATHER_API_KEY ? process.env.WEATHER_API_KEY.substring(0, 4) + '...' : null
+    });
 });
 
 // Generic error handler
