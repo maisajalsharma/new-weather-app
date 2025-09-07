@@ -159,6 +159,12 @@ app.get('/api/weather', rateLimit, async (req, res) => {
 });
 
 // Test API key endpoint
+// 1️⃣ Serve static frontend files from 'public'
+app.use(express.static('public'));
+
+// 2️⃣ API Endpoints
+
+// Test API key endpoint
 app.get('/api/test', async (req, res) => {
     if (!WEATHER_API_KEY) {
         return res.json({ status: 'error', message: 'API key not configured', hasApiKey: false });
@@ -191,20 +197,27 @@ app.get('/api/health', (req, res) => {
     });
 });
 
+// Environment variables endpoint
+app.get('/api/env', (req, res) => {
+    res.json({
+        apiKeyPresent: !!process.env.WEATHER_API_KEY,
+        apiKeyPreview: process.env.WEATHER_API_KEY
+            ? process.env.WEATHER_API_KEY.substring(0, 4) + '...'
+            : null
+    });
+});
+
 // Serve index.html for root route
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// 404 handler
-app.get('/api/env', (req, res) => {
-    res.json({
-        apiKeyPresent: !!process.env.WEATHER_API_KEY,
-        apiKeyPreview: process.env.WEATHER_API_KEY ? process.env.WEATHER_API_KEY.substring(0, 4) + '...' : null
-    });
+// 3️⃣ 404 handler for unknown routes
+app.use((req, res) => {
+    res.status(404).json({ error: 'Not found', message: 'Resource not found' });
 });
 
-// Generic error handler
+// 4️⃣ Generic error handler (must be last)
 app.use((err, req, res, next) => {
     console.error('❌ Server error:', err.message);
     res.status(500).json({
@@ -212,6 +225,7 @@ app.use((err, req, res, next) => {
         message: 'Something went wrong on our end'
     });
 });
+
 
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
