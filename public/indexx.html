@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🌤️ Weather Terminal - Linux Edition</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --terminal-bg: #0a0a0a;
+      --terminal-green: #00ff00;
+      --terminal-green-dim: #00cc00;
+      --terminal-green-bright: #33ff33;
+      --terminal-border: #00ff00;
+      --terminal-shadow: rgba(0, 255, 0, 0.5);
+      --terminal-glow: rgba(0, 255, 0, 0.3);
+      --error-color: #ff4444;
+      --warning-color: #ffaa00;
+      --info-color: #00aaff;
+    }
+
+    body {
+      font-family: 'Fira Code', 'Courier New', monospace;
+      background: linear-gradient(135deg, #0f0c29 0%, #302b63 35%, #24243e 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      color: var(--terminal-green);
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Background Matrix Effect */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(ellipse at center, rgba(0, 255, 0, 0.1) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    /* Terminal Window Container */
+    #terminal-container {
+      width: 100%;
+      max-width: 900px;
+      background: var(--terminal-bg);
+      border-radius: 12px;
+      box-shadow: 
+        0 0 30px var(--terminal-shadow),
+        inset 0 0 30px rgba(0, 255, 0, 0.05);
+      animation: terminalBootup 2s ease-out;
+      position: relative;
+      overflow: hidden;
+    }
+
+    @keyframes terminalBootup {
+      0% {
+        opacity: 0;
+        transform: scale(0.8) rotateX(10deg);
+        box-shadow: 0 0 0 var(--terminal-shadow);
+      }
+      50% {
+        opacity: 0.7;
+        transform: scale(0.95) rotateX(5deg);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) rotateX(0deg);
+        box-shadow: 0 0 30px var(--terminal-shadow), inset 0 0 30px rgba(0, 255, 0, 0.05);
+      }
+    }
+
+    /* Terminal Header */
+    .terminal-header {
+      background: linear-gradient(90deg, #1a1a1a 0%, #2a2a2a 50%, #1a1a1a 100%);
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--terminal-border);
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      border-radius: 12px 12px 0 0;
+      position: relative;
+    }
+
+    .terminal-lights {
+      display: flex;
+      gap: 8px;
+    }
+
+    .terminal-light {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      position: relative;
+    }
+
+    .terminal-light.red {
+      background: #ff5f57;
+      box-shadow: 0 0 10px rgba(255, 95, 87, 0.8);
+    }
+
+    .terminal-light.yellow {
+      background: #ffbd2e;
+      box-shadow: 0 0 10px rgba(255, 189, 46, 0.8);
+    }
+
+    .terminal-light.green {
+      background: #28ca42;
+      box-shadow: 0 0 10px rgba(40, 202, 66, 0.8);
+    }
+
+    .terminal-title {
+      flex: 1;
+      text-align: center;
+      color: var(--terminal-green-dim);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .terminal-user {
+      color: var(--terminal-green-dim);
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
+    /* Main Terminal Body */
+    #app {
+      padding: 30px;
+      position: relative;
+      background: var(--terminal-bg);
+      border-radius: 0 0 12px 12px;
+    }
+
+    /* Scan Line Effect */
+    #app::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--terminal-green), transparent);
+      animation: scanLine 4s linear infinite;
+      opacity: 0.6;
+    }
+
+    @keyframes scanLine {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100vw); }
+    }
+
+    /* CRT Screen Effect */
+    #app::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 255, 0, 0.03) 2px,
+        rgba(0, 255, 0, 0.03) 4px
+      );
+      pointer-events: none;
+      border-radius: 0 0 12px 12px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: var(--terminal-green);
+      text-shadow: 
+        0 0 10px var(--terminal-glow),
+        0 0 20px var(--terminal-glow),
+        0 0 30px var(--terminal-glow);
+      animation: titleFlicker 3s ease-in-out infinite;
+      font-size: 2.5rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+    }
+
+    @keyframes titleFlicker {
+      0%, 100% { 
+        opacity: 1;
+        text-shadow: 
+          0 0 10px var(--terminal-glow),
+          0 0 20px var(--terminal-glow),
+          0 0 30px var(--terminal-glow);
+      }
+      50% { 
+        opacity: 0.95;
+        text-shadow: 
+          0 0 5px var(--terminal-glow),
+          0 0 15px var(--terminal-glow),
+          0 0 25px var(--terminal-glow);
+      }
+    }
+
+    .input-container {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 25px;
+      position: relative;
+    }
+
+    .input-wrapper {
+      flex: 1;
+      position: relative;
+    }
+
+    .input-prompt {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--terminal-green-dim);
+      font-weight: 500;
+      z-index: 2;
+    }
+
+    #locationInput {
+      flex: 1;
+      background: rgba(0, 0, 0, 0.8);
+      border: 2px solid var(--terminal-border);
+      color: var(--terminal-green);
+      padding: 15px 20px 15px 45px;
+      font-size: 16px;
+      font-family: 'Fira Code', 'Courier New', monospace;
+      font-weight: 400;
+      border-radius: 8px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      width: 100%;
+      position: relative;
+      z-index: 1;
+    }
+
+    #locationInput:focus {
+      outline: none;
+      background: rgba(0, 255, 0, 0.1);
+      border-color: var(--terminal-green-bright);
+      box-shadow: 
+        0 0 20px var(--terminal-glow),
+        inset 0 0 10px rgba(0, 255, 0, 0.1);
+      transform: translateY(-2px);
+    }
+
+    #locationInput::placeholder {
+      color: rgba(0, 255, 0, 0.4);
+      font-style: italic;
+    }
+
+    #getWeatherBtn {
+      background: linear-gradient(45deg, rgba(0, 255, 0, 0.1), rgba(0, 255, 0, 0.2));
+      border: 2px solid var(--terminal-border);
+      color: var(--terminal-green);
+      padding: 15px 30px;
+      font-size: 16px;
+      font-family: 'Fira Code', 'Courier New', monospace;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    #getWeatherBtn:hover {
+      background: linear-gradient(45deg, rgba(0, 255, 0, 0.2), rgba(0, 255, 0, 0.3));
+      border-color: var(--terminal-green-bright);
+      transform: translateY(-3px);
+      box-shadow: 
+        0 10px 25px rgba(0, 255, 0, 0.3),
+        0 0 20px var(--terminal-glow);
+    }
+
+    #getWeatherBtn:active {
+      transform: translateY(-1px);
+    }
+
+    #getWeatherBtn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--terminal-glow) 0%, transparent 70%);
+      transform: translate(-50%, -50%);
+      transition: all 0.5s ease;
+    }
+
+    #getWeatherBtn:active::before {
+      width: 300px;
+      height: 300px;
+    }
+
+    #output {
+      background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(0, 20, 0, 0.9) 100%);
+      border: 2px solid var(--terminal-border);
+      border-radius: 8px;
+      padding: 25px;
+      min-height: 350px;
+      font-size: 14px;
+      line-height: 1.8;
+      color: var(--terminal-green);
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      position: relative;
+      overflow: hidden;
+      font-family: 'Fira Code', 'Courier New', monospace;
+      box-shadow: inset 0 0 30px rgba(0, 255, 0, 0.05);
+    }
+
+    /* Terminal Prompt */
+    #output::before {
+      content: 'user@weather-terminal:~$ ';
+      position: absolute;
+      top: 25px;
+      left: 25px;
+      color: var(--terminal-green-dim);
+      font-weight: 500;
+    }
+
+    /* Scrolling Scan Line */
+    #output::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--terminal-green-bright), transparent);
+      animation: outputScan 5s linear infinite;
+      opacity: 0.7;
+    }
+
+    @keyframes outputScan {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+
+    /* Typing Cursor */
+    .typing-cursor {
+      display: inline-block;
+      width: 12px;
+      height: 18px;
+      background: var(--terminal-green);
+      animation: cursorBlink 1s infinite;
+      vertical-align: text-bottom;
+      margin-left: 2px;
+    }
+
+    @keyframes cursorBlink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    .weather-icon {
+      font-size: 64px;
+      text-align: center;
+      margin: 25px 0;
+      animation: weatherFloat 4s ease-in-out infinite;
+      filter: drop-shadow(0 0 20px var(--terminal-glow));
+    }
+
+    @keyframes weatherFloat {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      25% { transform: translateY(-8px) rotate(1deg); }
+      50% { transform: translateY(-15px) rotate(0deg); }
+      75% { transform: translateY(-8px) rotate(-1deg); }
+    }
+
+    .loading {
+      text-align: center;
+      color: var(--terminal-green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .loading-dots {
+      display: flex;
+      gap: 4px;
+    }
+
+    .loading-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--terminal-green);
+      animation: loadingPulse 1.5s ease-in-out infinite;
+    }
+
+    .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+    .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes loadingPulse {
+      0%, 80%, 100% {
+        opacity: 0.3;
+        transform: scale(0.8);
+      }
+      40% {
+        opacity: 1;
+        transform: scale(1.2);
+      }
+    }
+
+    .error {
+      color: var(--error-color);
+      text-shadow: 0 0 10px rgba(255, 68, 68, 0.8);
+      animation: errorPulse 0.5s ease-in-out;
+    }
+
+    @keyframes errorPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    .success {
+      color: var(--terminal-green-bright);
+      text-shadow: 0 0 15px var(--terminal-glow);
+      animation: successGlow 1s ease-in-out;
+    }
+
+    @keyframes successGlow {
+      0% { text-shadow: 0 0 5px var(--terminal-glow); }
+      50% { text-shadow: 0 0 25px var(--terminal-glow), 0 0 35px var(--terminal-glow); }
+      100% { text-shadow: 0 0 15px var(--terminal-glow); }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+      
+      #terminal-container {
+        max-width: 100%;
+      }
+      
+      #app {
+        padding: 20px;
+      }
+      
+      h1 {
+        font-size: 2rem;
+      }
+      
+      .input-container {
+        flex-direction: column;
+        gap: 10px;
+      }
+      
+      #locationInput {
+        padding: 12px 15px 12px 40px;
+      }
+      
+      #getWeatherBtn {
+        padding: 12px 20px;
+      }
+    }
+
+    /* Additional Terminal Enhancements */
+    .command-history {
+      position: absolute;
+      bottom: 10px;
+      right: 20px;
+      font-size: 11px;
+      color: var(--terminal-green-dim);
+      opacity: 0.6;
+    }
+
+    /* Matrix Rain Effect (Optional) */
+    .matrix-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -2;
+      overflow: hidden;
+    }
+
+    /* Glow effects for better atmosphere */
+    @keyframes ambientGlow {
+      0%, 100% {
+        box-shadow: 
+          0 0 30px var(--terminal-shadow),
+          inset 0 0 30px rgba(0, 255, 0, 0.05);
+      }
+      50% {
+        box-shadow: 
+          0 0 50px var(--terminal-shadow),
+          inset 0 0 50px rgba(0, 255, 0, 0.1);
+      }
+    }
+
+    #terminal-container {
+      animation: terminalBootup 2s ease-out, ambientGlow 6s ease-in-out infinite 2s;
+    }
+  </style>
+</head>
+<body>
+  <div id="terminal-container">
+    <div class="terminal-header">
+      <div class="terminal-lights">
+        <div class="terminal-light red"></div>
+        <div class="terminal-light yellow"></div>
+        <div class="terminal-light green"></div>
+      </div>
+      <div class="terminal-title">Weather Terminal v2.0 - Linux Edition</div>
+      <div class="terminal-user">user@weather-station</div>
+    </div>
+    
+    <div id="app">
+      <h1>🌤️ Weather Terminal</h1>
+      <div class="input-container">
+        <div class="input-wrapper">
+          <div class="input-prompt">$</div>
+          <input type="text" id="locationInput" placeholder="Enter city name and press Enter..." />
+        </div>
+        <button id="getWeatherBtn">Execute</button>
+      </div>
+      <div id="output">
+                                      Welcome to Weather Terminal v2.0
+=====================================
+Enhanced Linux-style weather interface with real-time data processing.
+
+Features:
+• Advanced terminal aesthetics with CRT effects
+• Smooth animations and transitions  
+• Command history support (↑/↓ arrows)
+• Real-time weather satellite data
+• Enhanced error handling and feedback
+
+Type a city name and press Enter or click "Execute" to fetch current conditions.
+System ready for input...</div>
+      <div class="command-history">Use ↑/↓ for history</div>
+    </div>
+  </div>
+
+<script>
+    const API_URL = 'https://api.weatherapi.com/v1/current.json';
+    const API_KEY = '0b4ab9c3142e4aa18d8182756250409';
+
+    const locationInput = document.getElementById('locationInput');
+    const getWeatherBtn = document.getElementById('getWeatherBtn');
+    const output = document.getElementById('output');
+    
+    let typingTimeout;
+    let commandHistory = [];
+    let historyIndex = -1;
+    
+    function getWeatherIcon(weatherMain) {
+      const icons = {
+        'Clear': '☀️',
+        'Sunny': '☀️',
+        'Clouds': '☁️',
+        'Partly cloudy': '⛅',
+        'Rain': '🌧️',
+        'Light rain': '🌦️',
+        'Drizzle': '🌦️',
+        'Thunderstorm': '⛈️',
+        'Snow': '❄️',
+        'Mist': '🌫️',
+        'Fog': '🌫️',
+        'Haze': '🌫️'
+      };
+      return icons[weatherMain] || '🌡️';
+    }
+    
+    function typeWriter(text, callback, speed = 15) {
+      clearTimeout(typingTimeout);
+      let i = 0;
+      output.innerHTML = '<span style="color: var(--terminal-green-dim);">user@weather-terminal:~$ </span>';
+      
+      function type() {
+        if (i < text.length) {
+          output.innerHTML += text.charAt(i);
+          i++;
+          typingTimeout = setTimeout(type, speed);
+        } else {
+          output.innerHTML += '<span class="typing-cursor"></span>';
+          if (callback) callback();
+        }
+      }
+      
+      type();
+    }
+    
+    async function getWeather() {
+      const location = locationInput.value.trim();
+      
+      if (!location) {
+        typeWriter('❌ ERROR: Please enter a city name.\n\n> Ready for next command...');
+        return;
+      }
+
+      // Add to command history
+      if (commandHistory.length === 0 || commandHistory[commandHistory.length - 1] !== location) {
+        commandHistory.push(location);
+        if (commandHistory.length > 10) commandHistory.shift();
+      }
+      historyIndex = -1;
+      
+      // Show enhanced loading animation
+      output.innerHTML = `<div class="loading">
+        <span style="color: var(--terminal-green-dim);">user@weather-terminal:~$ </span>
+        Initializing weather satellite connection...
+        <div class="loading-dots">
+          <div class="loading-dot"></div>
+          <div class="loading-dot"></div>
+          <div class="loading-dot"></div>
+        </div>
+      </div>`;
+      
+      try {
+        const response = await fetch(`${API_URL}?key=${API_KEY}&q=${encodeURIComponent(location)}`);
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            if (response.status === 400 && errorData.error.code === 1006) {
+                throw new Error('City not found in global database.');
+            }
+          throw new Error('Weather satellite connection failed');
+        }
+        
+        const data = await response.json();
+        
+        const weatherIcon = getWeatherIcon(data.current.condition.text);
+        const timestamp = new Date().toLocaleString('en-US', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        });
+        
+        const weatherReport = `
+╔═══════════════════════════════════════════════════════════╗
+║                  WEATHER DATA RETRIEVED                   ║
+║                    TRANSMISSION COMPLETE                  ║
+╚═══════════════════════════════════════════════════════════╝
+
+📍 LOCATION: ${data.location.name}, ${data.location.country}
+🕐 TIMESTAMP: ${timestamp}
+📡 COORDINATES: [${data.location.lat.toFixed(4)}°N, ${data.location.lon.toFixed(4)}°E]
+🌐 LOCAL TIME: ${data.location.localtime}
+
+<div class="weather-icon">${weatherIcon}</div>
+
+╔═══════════════ CURRENT CONDITIONS ═══════════════╗
+║                                                  ║
+║  WEATHER: ${data.current.condition.text.toUpperCase().padEnd(42, ' ')}║
+║  TEMPERATURE: ${Math.round(data.current.temp_c)}°C (Feels like ${Math.round(data.current.feelslike_c)}°C)${' '.repeat(Math.max(0, 20 - `${Math.round(data.current.temp_c)}°C (Feels like ${Math.round(data.current.feelslike_c)}°C)`.length))}║
+║                                                  ║
+╚══════════════════════════════════════════════════╝
+
+╔═══════════════ ATMOSPHERIC DATA ═════════════════╗
+║                                                  ║
+║  💧 HUMIDITY: ${data.current.humidity}%${' '.repeat(35 - `💧 HUMIDITY: ${data.current.humidity}%`.length)}║
+║  🌪️  PRESSURE: ${data.current.pressure_mb} hPa${' '.repeat(32 - `🌪️  PRESSURE: ${data.current.pressure_mb} hPa`.length)}║
+║  👁️  VISIBILITY: ${data.current.vis_km} km${' '.repeat(31 - `👁️  VISIBILITY: ${data.current.vis_km} km`.length)}║
+║  💨 WIND: ${data.current.wind_kph} km/h ${data.current.wind_dir}${' '.repeat(29 - `💨 WIND: ${data.current.wind_kph} km/h ${data.current.wind_dir}`.length)}║
+║  ☁️  CLOUDINESS: ${data.current.cloud}%${' '.repeat(32 - `☁️  CLOUDINESS: ${data.current.cloud}%`.length)}║
+║                                                  ║
+╚══════════════════════════════════════════════════╝
+
+<span class="success">✓ DATA TRANSMISSION COMPLETE ✓</span>
+<span style="color: var(--terminal-green-dim);">
+Connection established with weather station at ${data.location.name}
+Signal strength: ████████████ 100%
+</span>
+
+> System ready for next query...`;
+        
+        typeWriter(weatherReport, null, 10);
+        
+      } catch (error) {
+        const errorMessage = `
+╔═══════════════════════════════════════════════════════════╗
+║                    ⚠️  ERROR DETECTED  ⚠️                 ║
+╚═══════════════════════════════════════════════════════════╝
+
+<span class="error">WEATHER SATELLITE CONNECTION FAILED</span>
+
+Error Details:
+├─ Reason: ${error.message}
+├─ Timestamp: ${new Date().toLocaleString()}
+└─ Location Query: "${location}"
+
+Diagnostic Information:
+┌─ Possible Causes:
+├─ • City name not found in global weather database
+├─ • Temporary network connectivity issues  
+├─ • Weather satellite downtime
+├─ • Invalid location format
+└─ • API rate limit exceeded
+
+Suggested Actions:
+├─ 1. Verify city name spelling and format
+├─ 2. Try adding country name (e.g., "London, UK")
+├─ 3. Check network connection stability
+└─ 4. Wait a moment and retry the request
+
+<span class="error">Please verify the location and try again.</span>
+
+> System ready for next query...`;
+        
+        typeWriter(errorMessage, null, 20);
+      }
+
+      locationInput.value = '';
+    }
+
+    // Enhanced keyboard controls
+    locationInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        getWeather();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (commandHistory.length > 0) {
+          historyIndex = historyIndex === -1 ? commandHistory.length - 1 : Math.max(0, historyIndex - 1);
+          locationInput.value = commandHistory[historyIndex];
+        }
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (historyIndex !== -1) {
+          historyIndex = historyIndex + 1;
+          if (historyIndex >= commandHistory.length) {
+            historyIndex = -1;
+            locationInput.value = '';
+          } else {
+            locationInput.value = commandHistory[historyIndex];
+          }
+        }
+      }
+    });
+    
+    getWeatherBtn.addEventListener('click', getWeather);
+    
+    // Auto-focus input
+    locationInput.focus();
+    
+    // Welcome animation on load
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        const welcome = `                                      Welcome to Weather Terminal v2.0
+=====================================
+Enhanced Linux-style weather interface with real-time data processing.
+
+Features:
+• Advanced terminal aesthetics with CRT effects
+• Smooth animations and transitions  
+• Command history support (↑/↓ arrows)
+• Real-time weather satellite data
+• Enhanced error handling and feedback
+
+Type a city name and press Enter or click "Execute" to fetch current conditions.
+System ready for input...`;
+        typeWriter(welcome);
+      }, 1000);
+    });
+
+    // Add some terminal ambiance
+    document.addEventListener('click', (e) => {
+      if (e.target === locationInput || e.target === getWeatherBtn) {
+        // Terminal click sound effect could be added here
+        locationInput.focus();
+      }
+    });
+</script>
+</body>
+</html>
