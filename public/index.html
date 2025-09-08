@@ -3,471 +3,635 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>🌤️ Weather Terminal - Linux Edition</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <title>🌤️ Weather Terminal - Modern Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
-        /* Root variables for easy theme changes */
         :root {
-            --bg-light: #f0f2f5;
-            --bg-dark: #e0e2e5;
-            --text-color: #0c1a2c;
-            --primary-blue: #007bff;
-            --primary-blue-dim: #0056b3;
-            --primary-blue-bright: #33aaff;
-            --terminal-border: rgba(0, 123, 255, 0.4);
-            --terminal-shadow: rgba(0, 123, 255, 0.2);
-            --terminal-glow: rgba(0, 123, 255, 0.1);
-            --error-color: #dc3545;
-            --warning-color: #ffc107;
-            --info-color: #17a2b8;
+            /* Modern Color Palette */
+            --bg-primary: #0a0b1a;
+            --bg-secondary: #1a1b2e;
+            --bg-glass: rgba(26, 27, 46, 0.7);
+            
+            --primary-purple: #8b5fbf;
+            --primary-blue: #4fc3f7;
+            --primary-pink: #e91e63;
+            --primary-green: #4caf50;
+            --primary-orange: #ff9800;
+            --primary-cyan: #00bcd4;
+            
+            --text-primary: #ffffff;
+            --text-secondary: #b0b3c1;
+            --text-muted: #6b7280;
+            
+            --card-border: rgba(139, 95, 191, 0.3);
+            --glass-shadow: 0 8px 32px rgba(139, 95, 191, 0.2);
+            --glow-effect: 0 0 30px rgba(139, 95, 191, 0.4);
         }
 
-        /* Basic body and font settings */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Roboto Mono', 'Courier New', monospace;
-            background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-dark) 100%);
-            min-height: auto; /* Changed to auto to allow content to dictate height */
-            display: flex;
-            justify-content: center;
-            align-items: flex-start; /* Aligned to start to prevent centering issues on long content */
-            padding: 20px;
-            color: var(--text-color);
+            font-family: 'Inter', system-ui, sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            overflow-x: hidden;
             position: relative;
-            /* Removed overflow: hidden; */
         }
 
-        /* Full-Screen Digital Grid Animation */
+        /* Animated Background */
         body::before {
-            content: "";
+            content: '';
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: 
-                linear-gradient(to right, transparent 1px, rgba(0, 123, 255, 0.1) 1px),
-                linear-gradient(to bottom, transparent 1px, rgba(0, 123, 255, 0.1) 1px);
-            background-size: 20px 20px;
-            animation: gridFlow 60s linear infinite;
-            z-index: -1;
-            pointer-events: none;
-            opacity: 0.5;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(139, 95, 191, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(79, 195, 247, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(233, 30, 99, 0.1) 0%, transparent 50%);
+            animation: backgroundShift 15s ease-in-out infinite;
+            z-index: -2;
         }
 
-        @keyframes gridFlow {
-            0% {
-                background-position: 0 0;
-            }
-            100% {
-                background-position: -200px -200px;
-            }
+        @keyframes backgroundShift {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.8; }
+            50% { transform: scale(1.1) rotate(1deg); opacity: 1; }
         }
 
-        /* Terminal Window Container */
-        #terminal-container {
-            width: 100%;
-            max-width: 900px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px var(--terminal-shadow), inset 0 0 50px var(--terminal-glow);
-            animation: terminalBootup 2s ease-out;
-            position: relative;
-            /* Removed overflow: hidden; */
-            margin-bottom: 20px; /* Added margin for better spacing */
-        }
-
-        @keyframes terminalBootup {
-            0% {
-                opacity: 0;
-                transform: scale(0.9) translateY(20px);
-                box-shadow: 0 0 0 transparent;
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-                box-shadow: 0 10px 40px var(--terminal-shadow), inset 0 0 50px var(--terminal-glow);
-            }
-        }
-
-        /* Terminal Header */
-        .terminal-header {
-            background: linear-gradient(90deg, #e9ecef 0%, #d8dfe6 100%);
-            padding: 12px 20px;
-            border-bottom: 2px solid var(--terminal-border);
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            border-radius: 12px 12px 0 0;
-            position: relative;
-            color: var(--primary-blue-dim);
-        }
-
-        .terminal-lights {
-            display: flex;
-            gap: 8px;
-        }
-
-        .terminal-light {
-            width: 12px;
-            height: 12px;
+        /* Floating Particles */
+        .particle {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: var(--primary-purple);
             border-radius: 50%;
-            box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+            animation: float 6s ease-in-out infinite;
+            z-index: -1;
+            box-shadow: 0 0 10px rgba(139, 95, 191, 0.5);
         }
 
-        .terminal-light.red {
-            background: #ff6b6b;
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.7; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 1; }
         }
 
-        .terminal-light.yellow {
-            background: #ffd166;
-        }
-
-        .terminal-light.green {
-            background: #06d6a0;
-        }
-
-        .terminal-title {
-            flex: 1;
-            text-align: center;
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        .terminal-user {
-            font-size: 12px;
-            opacity: 0.8;
-        }
-
-        /* Main Terminal Body */
-        #app {
-            padding: 30px;
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
             position: relative;
-            background: white;
-            border-radius: 0 0 12px 12px;
-            overflow-y: auto; /* Added a scrollbar for the output area if needed */
-            max-height: 70vh; /* Set a max height for the output area to allow scrolling */
+            z-index: 1;
         }
 
-        /* Scan Line Effect */
-        #app::before {
+        /* Glass Card Base */
+        .glass-card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            box-shadow: var(--glass-shadow);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--glow-effect);
+        }
+
+        .glass-card::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--primary-blue-dim), transparent);
-            animation: scanLine 4s linear infinite;
-            opacity: 0.4;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
         }
 
-        @keyframes scanLine {
-            0% {
-                transform: translateX(-100%);
-            }
-            100% {
-                transform: translateX(100vw);
-            }
-        }
-
-        /* CRT Screen Effect */
-        #app::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 123, 255, 0.02) 2px, rgba(0, 123, 255, 0.02) 4px);
-            pointer-events: none;
-            border-radius: 0 0 12px 12px;
-        }
-
-        h1 {
+        /* Header Card */
+        .header-card {
             text-align: center;
-            margin-bottom: 30px;
-            color: var(--primary-blue);
-            text-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            animation: slideDown 0.8s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary-purple), var(--primary-blue), var(--primary-pink));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
             animation: titleGlow 3s ease-in-out infinite;
-            font-size: 2.5rem;
-            font-weight: 700;
-            letter-spacing: 2px;
         }
 
         @keyframes titleGlow {
-            0%, 100% {
-                opacity: 1;
-                text-shadow: 0 0 5px rgba(0, 123, 255, 0.3), 0 0 15px rgba(0, 123, 255, 0.2);
-            }
-            50% {
-                opacity: 0.95;
-                text-shadow: 0 0 2px rgba(0, 123, 255, 0.1), 0 0 8px rgba(0, 123, 255, 0.15);
-            }
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.2); }
         }
 
-        /* Input container with fixed alignment */
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 400;
+        }
+
+        /* Input Container */
         .input-container {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 25px;
-            position: relative;
-            align-items: center;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            animation: slideUp 0.8s ease-out 0.2s both;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .input-wrapper {
-            flex-grow: 1;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-field {
+            flex: 1;
             position: relative;
         }
 
         .input-prompt {
             position: absolute;
-            left: 15px;
+            left: 1rem;
             top: 50%;
             transform: translateY(-50%);
-            color: var(--primary-blue-dim);
-            font-weight: 500;
+            color: var(--primary-purple);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            font-size: 1.1rem;
             z-index: 2;
         }
 
         #locationInput {
-            width: 80%; /* Changed to 100% to fill wrapper */
-            background: var(--bg-light);
-            border: 2px solid var(--terminal-border);
-            color: var(--text-color);
-            padding: 15px 20px 15px 45px;
-            font-size: 16px;
-            font-family: 'Roboto Mono', monospace;
-            font-weight: 400;
-            border-radius: 8px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            z-index: 1;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(139, 95, 191, 0.3);
+            border-radius: 15px;
+            padding: 1rem 1rem 1rem 3rem;
+            font-size: 1.1rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            color: var(--text-primary);
+            outline: none;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
         }
 
         #locationInput:focus {
-            outline: none;
-            background: #e9f2ff;
-            border-color: var(--primary-blue);
-            box-shadow: 0 0 20px rgba(0, 123, 255, 0.1), inset 0 0 10px rgba(0, 123, 255, 0.05);
+            border-color: var(--primary-purple);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 20px rgba(139, 95, 191, 0.3);
             transform: translateY(-2px);
         }
 
         #locationInput::placeholder {
-            color: rgba(12, 26, 44, 0.4);
+            color: var(--text-muted);
             font-style: italic;
         }
 
-        #getWeatherBtn {
-            background: var(--primary-blue);
-            border: 2px solid var(--primary-blue);
+        .execute-btn {
+            background: linear-gradient(135deg, var(--primary-purple), var(--primary-blue));
+            border: none;
+            border-radius: 15px;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
             color: white;
-            padding: 15px 30px;
-            font-size: 16px;
-            font-family: 'Roboto Mono', monospace;
-            font-weight: 500;
             cursor: pointer;
-            border-radius: 8px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
             text-transform: uppercase;
             letter-spacing: 1px;
-            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.2);
+            min-width: 140px;
         }
 
-        #getWeatherBtn:hover {
-            background: var(--primary-blue-dim);
-            border-color: var(--primary-blue-dim);
+        .execute-btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 123, 255, 0.3);
+            box-shadow: 0 10px 25px rgba(139, 95, 191, 0.4);
         }
 
-        #getWeatherBtn:active {
+        .execute-btn:active {
             transform: translateY(-1px);
-            box-shadow: 0 2px 10px rgba(0, 123, 255, 0.2);
         }
 
-        #output {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            border: 2px solid var(--terminal-border);
-            border-radius: 8px;
-            padding: 25px;
-            min-height: 350px;
-            font-size: 14px;
-            line-height: 1.8;
-            color: var(--text-color);
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            position: relative;
-            overflow: hidden;
-            font-family: 'Roboto Mono', monospace;
-            box-shadow: inset 0 0 30px rgba(0, 123, 255, 0.05);
-        }
-        
-        #output::before {
-            content: 'user@weather-terminal:~$ ';
-            position: absolute;
-            top: 25px;
-            left: 25px;
-            color: var(--primary-blue-dim);
-            font-weight: 500;
+        .status-indicators {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
         }
 
-        .typing-cursor {
-            display: inline-block;
-            width: 12px;
-            height: 18px;
-            background: var(--text-color);
-            animation: cursorBlink 1s infinite;
-            vertical-align: text-bottom;
-            margin-left: 2px;
+        .status-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 0.75rem;
+            text-align: center;
+            font-size: 0.85rem;
         }
 
-        @keyframes cursorBlink {
-            0%, 50% {
-                opacity: 1;
-            }
-            51%, 100% {
-                opacity: 0;
-            }
+        .status-icon {
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+        }
+
+        /* Output Container */
+        .output-container {
+            padding: 2rem;
+            margin-bottom: 2rem;
+            animation: slideUp 0.8s ease-out 0.4s both;
+            min-height: 200px;
+        }
+
+        /* Weather Data Cards */
+        .weather-grid {
+            display: grid;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .weather-main {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .location-card {
+            text-align: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, rgba(139, 95, 191, 0.2), rgba(79, 195, 247, 0.2));
+            border: 1px solid rgba(139, 95, 191, 0.3);
+            border-radius: 20px;
+            backdrop-filter: blur(20px);
         }
 
         .weather-icon {
-            font-size: 64px;
-            text-align: center;
-            margin: 25px 0;
+            font-size: 4rem;
+            margin-bottom: 1rem;
             animation: weatherFloat 4s ease-in-out infinite;
-            filter: drop-shadow(0 0 10px rgba(0, 123, 255, 0.2));
         }
 
-        .loading {
+        @keyframes weatherFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+
+        .location-name {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-purple), var(--primary-blue));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .coordinates {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .temp-card {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, rgba(233, 30, 99, 0.2), rgba(255, 152, 0, 0.2));
+            border: 1px solid rgba(233, 30, 99, 0.3);
+            border-radius: 20px;
+            backdrop-filter: blur(20px);
+        }
+
+        .temp-main {
             text-align: center;
-            color: var(--primary-blue-dim);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
+        }
+
+        .temperature {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--primary-pink);
+            margin-bottom: 0.5rem;
+        }
+
+        .feels-like {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .condition {
+            text-align: center;
+        }
+
+        .condition-text {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-orange);
+            margin-bottom: 0.5rem;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .detail-card {
+            background: var(--bg-glass);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .detail-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-purple);
+            box-shadow: 0 10px 25px rgba(139, 95, 191, 0.2);
+        }
+
+        .detail-icon {
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+
+        .detail-card:hover .detail-icon {
+            transform: scale(1.1);
+        }
+
+        .detail-value {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .detail-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        /* Color coding for different data types */
+        .humidity { --accent-color: var(--primary-blue); }
+        .pressure { --accent-color: var(--primary-purple); }
+        .visibility { --accent-color: var(--primary-green); }
+        .wind { --accent-color: var(--primary-cyan); }
+        .clouds { --accent-color: var(--primary-orange); }
+        .signal { --accent-color: var(--primary-pink); }
+
+        .detail-card .detail-value {
+            color: var(--accent-color);
+        }
+
+        /* Loading Animation */
+        .loading-container {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .loading-icon {
+            font-size: 3rem;
+            animation: pulse 2s ease-in-out infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+
+        .loading-text {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
         }
 
         .loading-dots {
             display: flex;
-            gap: 4px;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
         }
 
         .loading-dot {
             width: 8px;
             height: 8px;
+            background: var(--primary-purple);
             border-radius: 50%;
-            background: var(--primary-blue);
-            animation: loadingPulse 1.5s ease-in-out infinite;
+            animation: loadingBounce 1.4s ease-in-out infinite both;
         }
 
-        .loading-dot:nth-child(2) {
-            animation-delay: 0.2s;
+        .loading-dot:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes loadingBounce {
+            0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
         }
 
-        .loading-dot:nth-child(3) {
-            animation-delay: 0.4s;
+        .loading-progress {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 1rem;
         }
 
-        .error {
-            color: var(--error-color);
-            text-shadow: 0 0 10px rgba(220, 53, 69, 0.3);
-            animation: errorPulse 0.5s ease-in-out;
+        .loading-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-purple), var(--primary-blue));
+            border-radius: 2px;
+            animation: progressAnimation 2s ease-in-out infinite;
         }
 
-        .success {
-            color: var(--primary-blue-bright);
-            text-shadow: 0 0 10px rgba(51, 170, 255, 0.5);
-            animation: successGlow 1s ease-in-out;
+        @keyframes progressAnimation {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
         }
 
-        @keyframes successGlow {
-            0% {
-                text-shadow: 0 0 5px rgba(51, 170, 255, 0.3);
-            }
-            50% {
-                text-shadow: 0 0 20px rgba(51, 170, 255, 0.5);
-            }
-            100% {
-                text-shadow: 0 0 10px rgba(51, 170, 255, 0.4);
-            }
+        /* Error Styling */
+        .error-container {
+            background: linear-gradient(135deg, rgba(244, 67, 54, 0.2), rgba(233, 30, 99, 0.2));
+            border: 1px solid rgba(244, 67, 54, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            backdrop-filter: blur(20px);
+        }
+
+        .error-icon {
+            font-size: 3rem;
+            color: #f44336;
+            margin-bottom: 1rem;
+        }
+
+        .error-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #f44336;
+            margin-bottom: 1rem;
+        }
+
+        .error-message {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Success Message */
+        .success-container {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.2), rgba(139, 195, 74, 0.2));
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            margin-top: 1.5rem;
+            animation: successPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes successPulse {
+            0%, 100% { box-shadow: 0 0 15px rgba(76, 175, 80, 0.2); }
+            50% { box-shadow: 0 0 25px rgba(76, 175, 80, 0.4); }
+        }
+
+        .success-text {
+            color: var(--primary-green);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .success-details {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
         }
 
         /* Responsive Design */
         @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-            #terminal-container {
-                max-width: 100%;
-            }
-            #app {
-                padding: 20px;
-            }
-            h1 {
-                font-size: 2rem;
-            }
-            .input-container {
-                flex-direction: column;
-                gap: 10px;
-            }
-            #locationInput {
-                padding: 12px 15px 12px 40px;
-            }
-            #getWeatherBtn {
-                padding: 12px 20px;
-            }
+            .container { padding: 1rem; }
+            .title { font-size: 2.5rem; }
+            .input-wrapper { flex-direction: column; }
+            .execute-btn { width: 100%; }
+            .temp-card { grid-template-columns: 1fr; }
+            .details-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
         }
 
-        /* Additional Enhancements */
-        .command-history {
-            position: absolute;
-            bottom: 10px;
-            right: 20px;
-            font-size: 11px;
-            color: var(--primary-blue-dim);
-            opacity: 0.6;
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-purple);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-blue);
         }
     </style>
 </head>
 <body>
-    <div id="terminal-container">
-        <div class="terminal-header">
-            <div class="terminal-lights">
-                <div class="terminal-light red"></div>
-                <div class="terminal-light yellow"></div>
-                <div class="terminal-light green"></div>
-            </div>
-            <div class="terminal-title">Weather Terminal v2.0 - Linux Edition</div>
-            <div class="terminal-user">user@weather-station</div>
+    <!-- Floating Particles -->
+    <div class="particle" style="left: 10%; animation-delay: 0s;"></div>
+    <div class="particle" style="left: 20%; animation-delay: 0.5s;"></div>
+    <div class="particle" style="left: 30%; animation-delay: 1s;"></div>
+    <div class="particle" style="left: 40%; animation-delay: 1.5s;"></div>
+    <div class="particle" style="left: 50%; animation-delay: 2s;"></div>
+    <div class="particle" style="left: 60%; animation-delay: 2.5s;"></div>
+    <div class="particle" style="left: 70%; animation-delay: 3s;"></div>
+    <div class="particle" style="left: 80%; animation-delay: 3.5s;"></div>
+    <div class="particle" style="left: 90%; animation-delay: 4s;"></div>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="glass-card header-card">
+            <h1 class="title">🌤️ Weather Terminal</h1>
+            <p class="subtitle">By Sajal • fetch Real-time Weather Data</p>
         </div>
 
-        <div id="app">
-            <h1>🌤️ Weather Terminal</h1>
-            <div class="input-container">
-                <div class="input-wrapper">
-                    <div class="input-prompt">$</div>
-                    <input type="text" id="locationInput" placeholder="Enter city name and press Enter..." />
+        <!-- Input Section -->
+        <div class="glass-card input-container">
+            <div class="input-wrapper">
+                <div class="input-field">
+                    <span class="input-prompt">$</span>
+                    <input type="text" id="locationInput" placeholder="Enter city name and press Enter...">
                 </div>
-                <button id="getWeatherBtn">Execute</button>
+                <button class="execute-btn" id="getWeatherBtn">🚀 Execute</button>
             </div>
-            <div id="output">
-                Welcome to Weather Terminal v2.0
-=====================================
-Enhanced Linux-style weather interface with real-time data processing.
-
-Features:
-• Advanced terminal aesthetics with CRT effects
-• Smooth animations and transitions
-• Command history support (↑/↓ arrows)
-• Real-time weather satellite data
-• Enhanced error handling and feedback
-
-Type a city name and press Enter or click "Execute" to fetch current conditions.
-System ready for input...
+            
+            <div class="status-indicators">
+                <div class="status-item">
+                    <div class="status-icon">🟢</div>
+                    <div>System Online</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-icon">📡</div>
+                    <div>Satellite Ready</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-icon">⚡</div>
+                    <div>Real-time Data</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-icon">🔒</div>
+                    <div>Secure Connection</div>
+                </div>
             </div>
-            <div class="command-history">Use ↑/↓ for history</div>
+        </div>
+
+        <!-- Output Section -->
+        <div class="glass-card output-container" id="outputContainer">
+            <div id="weatherOutput">
+                <div style="text-align: center; padding: 2rem;">
+                    <div style="font-size: 2rem; margin-bottom: 1rem;">🌐</div>
+                    <h3 style="color: var(--primary-purple); margin-bottom: 1rem;">Weather Terminal Ready</h3>
+                    <p style="color: var(--text-secondary);">Enter a city name to fetch real-time weather data</p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -477,9 +641,8 @@ System ready for input...
 
         const locationInput = document.getElementById('locationInput');
         const getWeatherBtn = document.getElementById('getWeatherBtn');
-        const output = document.getElementById('output');
+        const weatherOutput = document.getElementById('weatherOutput');
 
-        let typingTimeout;
         let commandHistory = [];
         let historyIndex = -1;
 
@@ -501,31 +664,136 @@ System ready for input...
             return icons[weatherMain] || '🌡️';
         }
 
-        function typeWriter(text, callback, speed = 15) {
-            clearTimeout(typingTimeout);
-            let i = 0;
-            output.innerHTML = ''; // Clear previous content
-            
-            function type() {
-                if (i < text.length) {
-                    output.innerHTML += text.charAt(i);
-                    i++;
-                    output.scrollTop = output.scrollHeight; // Automatically scroll to the bottom
-                    typingTimeout = setTimeout(type, speed);
-                } else {
-                    output.innerHTML += '<span class="typing-cursor"></span>';
-                    if (callback) callback();
-                }
-            }
-            
-            type();
+        function showLoading() {
+            weatherOutput.innerHTML = `
+                <div class="loading-container">
+                    <div class="loading-icon">📡</div>
+                    <div class="loading-text">Connecting to Weather Satellite</div>
+                    <div class="loading-dots">
+                        <div class="loading-dot"></div>
+                        <div class="loading-dot"></div>
+                        <div class="loading-dot"></div>
+                    </div>
+                    <div style="margin-bottom: 1rem; color: var(--text-secondary);">Initializing secure connection...</div>
+                    <div class="loading-progress">
+                        <div class="loading-bar"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showError(error, location) {
+            weatherOutput.innerHTML = `
+                <div class="error-container">
+                    <div class="error-icon">⚠️</div>
+                    <div class="error-title">Connection Failed</div>
+                    <div class="error-message">${error}</div>
+                    <div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
+                        Query: "${location}" • ${new Date().toLocaleString()}
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                        <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 10px;">
+                            <div style="font-weight: 600; margin-bottom: 0.5rem; color: var(--primary-orange);">Possible Causes:</div>
+                            <div style="font-size: 0.8rem; color: var(--text-secondary);">
+                                • City name not found<br>
+                                • Network connectivity issues<br>
+                                • Temporary server downtime<br>
+                                • Invalid location format
+                            </div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 10px;">
+                            <div style="font-weight: 600; margin-bottom: 0.5rem; color: var(--primary-blue);">Suggested Actions:</div>
+                            <div style="font-size: 0.8rem; color: var(--text-secondary);">
+                                • Check spelling and format<br>
+                                • Try "London, UK" format<br>
+                                • Verify network connection<br>
+                                • Retry after a moment
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showWeatherData(data) {
+            const weatherIcon = getWeatherIcon(data.current.condition.text);
+            const timestamp = new Date().toLocaleString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+            });
+
+            weatherOutput.innerHTML = `
+                <div class="weather-grid">
+                    <div class="weather-main">
+                        <div class="location-card">
+                            <div class="weather-icon">${weatherIcon}</div>
+                            <div class="location-name">${data.location.name}, ${data.location.country}</div>
+                            <div class="coordinates">📍 ${data.location.lat.toFixed(4)}°N, ${data.location.lon.toFixed(4)}°E</div>
+                            <div class="coordinates">🕐 ${timestamp}</div>
+                        </div>
+
+                        <div class="temp-card">
+                            <div class="temp-main">
+                                <div class="temperature">${Math.round(data.current.temp_c)}°C</div>
+                                <div class="feels-like">Feels like ${Math.round(data.current.feelslike_c)}°C</div>
+                            </div>
+                            <div class="condition">
+                                <div class="condition-text">${data.current.condition.text}</div>
+                                <div style="color: var(--text-secondary); font-size: 0.9rem;">Current Condition</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="details-grid">
+                        <div class="detail-card humidity">
+                            <span class="detail-icon">💧</span>
+                            <div class="detail-value">${data.current.humidity}%</div>
+                            <div class="detail-label">Humidity</div>
+                        </div>
+                        <div class="detail-card pressure">
+                            <span class="detail-icon">🌪️</span>
+                            <div class="detail-value">${data.current.pressure_mb} hPa</div>
+                            <div class="detail-label">Pressure</div>
+                        </div>
+                        <div class="detail-card visibility">
+                            <span class="detail-icon">👁️</span>
+                            <div class="detail-value">${data.current.vis_km} km</div>
+                            <div class="detail-label">Visibility</div>
+                        </div>
+                        <div class="detail-card wind">
+                            <span class="detail-icon">💨</span>
+                            <div class="detail-value">${data.current.wind_kph} km/h</div>
+                            <div class="detail-label">Wind ${data.current.wind_dir}</div>
+                        </div>
+                        <div class="detail-card clouds">
+                            <span class="detail-icon">☁️</span>
+                            <div class="detail-value">${data.current.cloud}%</div>
+                            <div class="detail-label">Cloudiness</div>
+                        </div>
+                        <div class="detail-card signal">
+                            <span class="detail-icon">📡</span>
+                            <div class="detail-value">100%</div>
+                            <div class="detail-label">Signal Strength</div>
+                        </div>
+                    </div>
+
+                    <div class="success-container">
+                        <div class="success-text">✓ Weather data retrieved successfully!</div>
+                        <div class="success-details">Connection established • Signal strength: ████████████ 100%</div>
+                    </div>
+                </div>
+            `;
         }
 
         async function getWeather() {
             const location = locationInput.value.trim();
 
             if (!location) {
-                typeWriter('❌ ERROR: Please enter a city name.\n\n> Ready for next command...');
+                showError('Please enter a city name', '');
                 return;
             }
 
@@ -536,16 +804,7 @@ System ready for input...
             }
             historyIndex = -1;
 
-            // Show enhanced loading animation
-            output.innerHTML = `<div class="loading">
-                <span style="color: var(--primary-blue-dim);">user@weather-terminal:~$ </span>
-                Initializing weather satellite connection...
-                <div class="loading-dots">
-                    <div class="loading-dot"></div>
-                    <div class="loading-dot"></div>
-                    <div class="loading-dot"></div>
-                </div>
-            </div>`;
+            showLoading();
 
             try {
                 const response = await fetch(`${API_URL}?key=${API_KEY}&q=${encodeURIComponent(location)}`);
@@ -553,102 +812,22 @@ System ready for input...
                 if (!response.ok) {
                     const errorData = await response.json();
                     if (response.status === 400 && errorData.error.code === 1006) {
-                        throw new Error('City not found in global database.');
+                        throw new Error('City not found in global database');
                     }
                     throw new Error('Weather satellite connection failed');
                 }
 
                 const data = await response.json();
-
-                const weatherIcon = getWeatherIcon(data.current.condition.text);
-                const timestamp = new Date().toLocaleString('en-US', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit'
-                });
-
-                const weatherReport = `
-╔═══════════════════════════════════════════════════════════╗
-║                  WEATHER DATA RETRIEVED                   ║
-║                    TRANSMISSION COMPLETE                  ║
-╚═══════════════════════════════════════════════════════════╝
-
-📍 LOCATION: ${data.location.name}, ${data.location.country}
-🕐 TIMESTAMP: ${timestamp}
-📡 COORDINATES: [${data.location.lat.toFixed(4)}°N, ${data.location.lon.toFixed(4)}°E]
-🌐 LOCAL TIME: ${data.location.localtime}
-
-<div class="weather-icon">${weatherIcon}</div>
-
-╔═══════════════ CURRENT CONDITIONS ═══════════════╗
-║                                                  ║
-║  WEATHER: ${data.current.condition.text.toUpperCase().padEnd(42, ' ')}║
-║  TEMPERATURE: ${Math.round(data.current.temp_c)}°C (Feels like ${Math.round(data.current.feelslike_c)}°C)${' '.repeat(Math.max(0, 20 - `${Math.round(data.current.temp_c)}°C (Feels like ${Math.round(data.current.feelslike_c)}°C)`.length))}║
-║                                                  ║
-╚══════════════════════════════════════════════════╝
-
-╔═══════════════ ATMOSPHERIC DATA ═════════════════╗
-║                                                  ║
-║  💧 HUMIDITY: ${data.current.humidity}%${' '.repeat(35 - `💧 HUMIDITY: ${data.current.humidity}%`.length)}║
-║  🌪️  PRESSURE: ${data.current.pressure_mb} hPa${' '.repeat(32 - `🌪️  PRESSURE: ${data.current.pressure_mb} hPa`.length)}║
-║  👁️  VISIBILITY: ${data.current.vis_km} km${' '.repeat(31 - `👁️  VISIBILITY: ${data.current.vis_km} km`.length)}║
-║  💨 WIND: ${data.current.wind_kph} km/h ${data.current.wind_dir}${' '.repeat(29 - `💨 WIND: ${data.current.wind_kph} km/h ${data.current.wind_dir}`.length)}║
-║  ☁️  CLOUDINESS: ${data.current.cloud}%${' '.repeat(32 - `☁️  CLOUDINESS: ${data.current.cloud}%`.length)}║
-║                                                  ║
-╚══════════════════════════════════════════════════╝
-
-<span class="success">✓ DATA TRANSMISSION COMPLETE ✓</span>
-<span style="color: var(--primary-blue-dim);">
-Connection established with weather station at ${data.location.name}
-Signal strength: ████████████ 100%
-</span>
-
-> System ready for next query...`;
-
-                typeWriter(weatherReport, null, 10);
+                setTimeout(() => showWeatherData(data), 1000); // Add slight delay for loading effect
 
             } catch (error) {
-                const errorMessage = `
-╔═══════════════════════════════════════════════════════════╗
-║                    ⚠️  ERROR DETECTED  ⚠️                 ║
-╚═══════════════════════════════════════════════════════════╝
-
-<span class="error">WEATHER SATELLITE CONNECTION FAILED</span>
-
-Error Details:
-├─ Reason: ${error.message}
-├─ Timestamp: ${new Date().toLocaleString()}
-└─ Location Query: "${location}"
-
-Diagnostic Information:
-┌─ Possible Causes:
-├─ • City name not found in global weather database
-├─ • Temporary network connectivity issues
-├─ • Weather satellite downtime
-├─ • Invalid location format
-└─ • API rate limit exceeded
-
-Suggested Actions:
-├─ 1. Verify city name spelling and format
-├─ 2. Try adding country name (e.g., "London, UK")
-├─ 3. Check network connection stability
-└─ 4. Wait a moment and retry the request
-
-<span class="error">Please verify the location and try again.</span>
-
-> System ready for next query...`;
-
-                typeWriter(errorMessage, null, 20);
+                setTimeout(() => showError(error.message, location), 1000);
             }
 
             locationInput.value = '';
         }
 
-        // Enhanced keyboard controls
+        // Event Listeners
         locationInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 getWeather();
@@ -677,35 +856,19 @@ Suggested Actions:
         // Auto-focus input
         locationInput.focus();
 
-        // Welcome animation on load
-        window.addEventListener('load', () => {
+        // Add random particles periodically
+        setInterval(() => {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = '0s';
+            particle.style.animationDuration = (Math.random() * 4 + 4) + 's';
+            document.body.appendChild(particle);
+            
             setTimeout(() => {
-                const welcome = `
-                
-                                         Welcome to Weather Terminal v2.0
-=====================================
-Enhanced Linux-style weather interface with real-time data processing.
-
-Features:
-• Advanced terminal aesthetics with CRT effects
-• Smooth animations and transitions
-• Command history support (↑/↓ arrows)
-• Real-time weather satellite data
-• Enhanced error handling and feedback
-
-Type a city name and press Enter or click "Execute" to fetch current conditions.
-System ready for input...`;
-                typeWriter(welcome);
-            }, 1000);
-        });
-
-        // Add some terminal ambiance
-        document.addEventListener('click', (e) => {
-            if (e.target === locationInput || e.target === getWeatherBtn) {
-                // Terminal click sound effect could be added here
-                locationInput.focus();
-            }
-        });
+                particle.remove();
+            }, 8000);
+        }, 3000);
     </script>
 </body>
 </html>
